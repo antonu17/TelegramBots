@@ -51,6 +51,7 @@ public class Message implements IBotApiObject {
     private static final String CHANNELCHATCREATED_FIELD = "channel_chat_created";
     private static final String MIGRATETOCHAT_FIELD = "migrate_to_chat_id";
     private static final String MIGRATEFROMCHAT_FIELD = "migrate_from_chat_id";
+    private static final String EDITDATE_FIELD = "edit_date";
     @JsonProperty(MESSAGEID_FIELD)
     private Integer messageId; ///< Integer	Unique message identifier
     @JsonProperty(FROM_FIELD)
@@ -62,7 +63,7 @@ public class Message implements IBotApiObject {
     @JsonProperty(FORWARDFROM_FIELD)
     private User forwardFrom; ///< Optional. For forwarded messages, sender of the original message
     @JsonProperty(FORWARDFROMCHAT_FIELD)
-    private Chat forwardedFromChat; ///< Optional. For messages forwarded from a channel, information about the original channel
+    private Chat forwardFromChat; ///< Optional. For messages forwarded from a channel, information about the original channel
     @JsonProperty(FORWARDDATE_FIELD)
     private Integer forwardDate; ///< Optional. For forwarded messages, date the original message was sent
     @JsonProperty(TEXT_FIELD)
@@ -117,6 +118,8 @@ public class Message implements IBotApiObject {
     private Long migrateToChatId; ///< Optional. The chat has been migrated to a chat with specified identifier, not exceeding 1e13 by absolute value
     @JsonProperty(MIGRATEFROMCHAT_FIELD)
     private Long migrateFromChatId; ///< Optional. The chat has been migrated from a chat with specified identifier, not exceeding 1e13 by absolute value
+    @JsonProperty(EDITDATE_FIELD)
+    private Integer editDate; ///< Optional. Date the message was last edited in Unix time
 
     public Message() {
         super();
@@ -133,7 +136,7 @@ public class Message implements IBotApiObject {
         }
         this.chat = new Chat(jsonObject.getJSONObject(CHAT_FIELD));
         if (jsonObject.has(FORWARDFROMCHAT_FIELD)) {
-            this.forwardedFromChat = new Chat(jsonObject.getJSONObject(FORWARDFROMCHAT_FIELD));
+            this.forwardFromChat = new Chat(jsonObject.getJSONObject(FORWARDFROMCHAT_FIELD));
         }
         if (jsonObject.has(FORWARDFROM_FIELD)) {
             this.forwardFrom = new User(jsonObject.getJSONObject(FORWARDFROM_FIELD));
@@ -224,6 +227,13 @@ public class Message implements IBotApiObject {
         }
         if (jsonObject.has(MIGRATEFROMCHAT_FIELD)) {
             this.migrateFromChatId = jsonObject.getLong(MIGRATEFROMCHAT_FIELD);
+        }
+        if (jsonObject.has(EDITDATE_FIELD)) {
+            editDate = jsonObject.getInt(EDITDATE_FIELD);
+        }
+
+        if (hasText() && entities != null) {
+            entities.forEach(x -> x.computeText(text));
         }
     }
 
@@ -383,8 +393,12 @@ public class Message implements IBotApiObject {
         return location != null;
     }
 
-    public Chat getForwardedFromChat() {
-        return forwardedFromChat;
+    public Chat getForwardFromChat() {
+        return forwardFromChat;
+    }
+
+    public Integer getEditDate() {
+        return editDate;
     }
 
     @Override
@@ -398,8 +412,8 @@ public class Message implements IBotApiObject {
             gen.writeNumberField(DATE_FIELD, date);
         }
         gen.writeObjectField(CHAT_FIELD, chat);
-        if (forwardedFromChat != null) {
-            gen.writeObjectField(FORWARDFROMCHAT_FIELD, forwardedFromChat);
+        if (forwardFromChat != null) {
+            gen.writeObjectField(FORWARDFROMCHAT_FIELD, forwardFromChat);
         }
         if (forwardFrom != null) {
             gen.writeObjectField(FORWARDFROM_FIELD, forwardFrom);
@@ -481,6 +495,9 @@ public class Message implements IBotApiObject {
         if (migrateFromChatId != null) {
             gen.writeNumberField(MIGRATEFROMCHAT_FIELD, migrateFromChatId);
         }
+        if (editDate != null) {
+            gen.writeNumberField(EDITDATE_FIELD, editDate);
+        }
         gen.writeEndObject();
         gen.flush();
     }
@@ -498,7 +515,7 @@ public class Message implements IBotApiObject {
                 ", date=" + date +
                 ", chat=" + chat +
                 ", forwardFrom=" + forwardFrom +
-                ", forwardedFromChat=" + forwardedFromChat +
+                ", forwardFromChat=" + forwardFromChat +
                 ", forwardDate=" + forwardDate +
                 ", text='" + text + '\'' +
                 ", audio=" + audio +
@@ -522,6 +539,7 @@ public class Message implements IBotApiObject {
                 ", channelChatCreated=" + channelChatCreated +
                 ", migrateToChatId=" + migrateToChatId +
                 ", migrateFromChatId=" + migrateFromChatId +
+                ", editDate=" + editDate +
                 '}';
     }
 }
